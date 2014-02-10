@@ -30,7 +30,7 @@ class SSC32(object):
     def write (self,text):
         self.ser.write(text)
     
-    def Position (self,numeroMoteur):
+    def Position (self):
         position = 'QP {0} <cr>'.format(numeroMoteur) # Qp permet de demander à la carte la position du Servo. 
         self.ser.write(position)
         Us = self.read();# On lit la position envoyé en Us . 
