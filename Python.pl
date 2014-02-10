@@ -6,16 +6,16 @@ import serial
 import math
 
 
+# SSC32 permet la communication entre la carte ss32 et l'utulisateur. 
 class SSC32(object):
 
-    def __init__(self, port, baudrate, count=5, config=None, autocommit=None):
-  
-        self.autocommit = autocommit #
-        self.config = config
-        self.ser = serial.Serial(port, baudrate, timeout=1)    
-        self.ser.write('\r'*10)
-        self._servos = [Servo(self, i) for i in xrange(count)]
-         # On vide le buffer
+    def __init__(self, port, baudrate, count=5,  autocommit=None):
+        self.autocommit = autocommit # Permet de définir la vitesse de rotation d'un Servo
+        self.ser = serial.Serial(port, baudrate, timeout=1) # Socket de connexion
+        self.ser.write('\r'*10) # On initialise la carte en envoyant 10 fois RetourChar.
+        self._servos = [Servo(self, i) for i in xrange(count)] # On associe tous les servos associé à cette connexion.
+        
+ # On vide le buffer
     #Fermer la connexion
     def close(self):
         self.ser.close()
@@ -46,21 +46,22 @@ class SSC32(object):
 
                 if (ich <> '\r'): #tant qu'il n'y pas de marque d'arrêt. On lit
                         inp = inp + ich;
-        return inp;
+        return inp; # inp est un char ou un int , depend de la demande .
     
     def Enmouvement (self):
         self.ser.flushInput() # On efface le buffer d'entrer.
-        self.ser.write('Q\n \r') # Cette commande Q permet de demander à la carte si 
+        self.ser.write('Q\n \r') # Cette commande Q permet de demander à la carte si le robot est en mouvement
         r = self.read()
-        return r == '.' # Si c'est égale alors le robot est en mouvement . 
+        return r == '.' # Si true alors le robot est en mouvement . (voir manuel)
     
+    # Permet de définir tous les Servos .
     def __getitem__(self, it):
         if type(it) == str or type(it) == unicode:
             for servo in self._servos:
                 it = it.upper()
                 if servo.name == it:
                     return servo
-            raise KeyError(it)
+            raise KeyError(it) # En cas d'erreur .
         return self._servos[it]
 
     def __len__(self):
@@ -73,12 +74,11 @@ class SSC32(object):
             
     def commit(self, time=None):
         """
-        Commit servo states to comtroller
+        Commit permet d'envoyé la configuaration choisit pour chaque servo.
 
-        time — operation time ([#<n>P<pos>]T<time>)
+        De la forme ([#<n>P<pos>]T<time>) avec n le numéro du Servo 
         """
-        cmd = ''.join([self._servos[i]._get_cmd_string()
-                       for i in xrange(len(self._servos))])
+        cmd = ''.join([self._servos[i]._get_cmd_string() for i in xrange(len(self._servos))])
         if time is not None:
             cmd += 'T{0}'.format(time)
         cmd += '\n'
@@ -100,6 +100,7 @@ def To_uS (degrees):
    
    return result;
 
+# La classe Servo permet de décrire chaque Servo en définisant ça position , son nom (facultatif)  et son numero
 class Servo(object):
         def __init__(self, conexion, numero, name=None):
             
@@ -111,7 +112,7 @@ class Servo(object):
             self.max = 2500
             self.deg_max = 90.0
             self.deg_min = -90.0
-            self.is_changed = True
+            self.is_changed = True #Permet de voir si il y a eu modification des valeurs .( dans le cas d'un commit) 
 
         def __repr__(self):
             if self.name is not None:
@@ -129,10 +130,10 @@ class Servo(object):
         def position (self,pos):
             pos = int (pos)
            
-            if pos > self.max : # Si la position désiré est sup  à la valeur max alors on va à la valeur max.
+            if pos > self.max : # Si la position désirée est sup  à la valeur max alors on va à la valeur max.
                 pos = self.max 
           
-            elif  pos < self.min :
+            elif  pos < self.min : # Si la position désirée est inf.  à la valeur min alors on va à la valeur max.
                 pos = self.min ;
             
             self.is_changed = True
@@ -142,7 +143,7 @@ class Servo(object):
         @degree.setter
         def degree(self, deg):
             """
-            Set position in degrees
+            La position en degree
             """
             deg = float(deg)
             pos = self.min + \
