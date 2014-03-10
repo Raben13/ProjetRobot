@@ -3,7 +3,7 @@ __email__ = 'Radhoane.ben@gmail.com'
 
 import serial
 import math
-
+import Servo
 
 # SSC32 permet la communication entre la carte ss32 et l'utulisateur. 
 class SSC32(object):
