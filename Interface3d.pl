@@ -2,7 +2,7 @@
 '''
 Created on 15 f�vr. 2014
 
-@author: Adam
+@author: Adam & Radhoane
 '''
 from visual import *
 from visual.controls import *
